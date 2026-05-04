@@ -1,75 +1,117 @@
 'use client'
-import { FileBarChart, Download, Plus, Calendar } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { FileBarChart, Download, Plus, Calendar, TrendingUp } from 'lucide-react'
 
-const mockReports = [
-  { id: '1', title: 'تقرير السلامة الأسبوعي', type: 'weekly', period: '27 أبريل - 3 مايو 2025', status: 'generated', created: 'منذ يومين' },
-  { id: '2', title: 'تقرير حضور العمال - أبريل', type: 'attendance', period: 'أبريل 2025', status: 'generated', created: 'منذ 4 أيام' },
-  { id: '3', title: 'تقرير الحوادث الشهري', type: 'incident', period: 'أبريل 2025', status: 'sent', created: 'منذ أسبوع' },
-  { id: '4', title: 'تحليل الأداء التشغيلي Q1', type: 'custom', period: 'يناير - مارس 2025', status: 'draft', created: 'منذ ساعتين' },
+const reports = [
+  { title:'تقرير السلامة الأسبوعي', type:'أسبوعي', period:'27 أبريل - 3 مايو 2025', status:'generated', date:'منذ يومين', score:87 },
+  { title:'تقرير حضور العمال - أبريل', type:'حضور', period:'أبريل 2025', status:'generated', date:'منذ 4 أيام', score:92 },
+  { title:'تقرير الحوادث الشهري', type:'حوادث', period:'أبريل 2025', status:'sent', date:'منذ أسبوع', score:74 },
+  { title:'تحليل الأداء Q1', type:'مخصص', period:'يناير - مارس 2025', status:'draft', date:'منذ ساعتين', score:0 },
 ]
-
-const typeLabels: Record<string, string> = { weekly: 'أسبوعي', monthly: 'شهري', attendance: 'حضور', incident: 'حوادث', safety: 'سلامة', custom: 'مخصص' }
+const stColors: Record<string,string> = { generated:'#00d4ff', sent:'#00e676', draft:'#ffaa00' }
+const stLabels: Record<string,string> = { generated:'جاهز', sent:'تم الإرسال', draft:'مسودة' }
 
 export default function ReportsPage() {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div style={{ display:'flex', flexDirection:'column', gap:'20px' }}>
+      <style>{`@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}`}</style>
+
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', animation:'fadeUp 0.4s ease both' }}>
         <div>
-          <h1 className="text-2xl font-bold text-white">التقارير والتحليلات</h1>
-          <p className="text-slate-400 text-sm mt-0.5">إنشاء وتصدير تقارير شاملة</p>
+          <h1 style={{ fontSize:'22px', fontWeight:800, color:'#e8f0ff', letterSpacing:'-0.02em' }}>التقارير والتحليلات</h1>
+          <p style={{ fontSize:'12px', color:'#3d4f6e', marginTop:'3px' }}>إنشاء وتصدير تقارير شاملة</p>
         </div>
-        <button className="bg-cyan-500 hover:bg-cyan-400 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-2">
-          <Plus size={16} /> تقرير جديد
-        </button>
+        <button style={{
+          display:'flex', alignItems:'center', gap:'8px', padding:'10px 18px', borderRadius:'10px',
+          background:'linear-gradient(135deg,#00d4ff,#0066ff)', border:'none', color:'white',
+          fontSize:'13px', fontWeight:700, cursor:'pointer', fontFamily:"'Cairo',sans-serif",
+          boxShadow:'0 0 20px rgba(0,212,255,0.3)',
+        }}><Plus size={15}/> تقرير جديد</button>
       </div>
 
-      {/* Quick generate cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {['تقرير السلامة', 'تقرير الحضور', 'تقرير الحوادث', 'تقرير مخصص'].map(t => (
-          <button key={t} className="bg-slate-900 border border-slate-800 hover:border-cyan-500/30 rounded-xl p-4 text-right transition-all group">
-            <FileBarChart size={24} className="text-cyan-400 mb-2 group-hover:scale-110 transition-transform" />
-            <div className="text-sm font-medium text-white">{t}</div>
-            <div className="text-xs text-slate-400 mt-0.5">إنشاء سريع</div>
+      {/* Quick generate */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'12px', animation:'fadeUp 0.4s ease 0.05s both' }}>
+        {[
+          { label:'تقرير السلامة', icon:'🛡️', color:'#00d4ff' },
+          { label:'تقرير الحضور', icon:'👷', color:'#00e676' },
+          { label:'تقرير الحوادث', icon:'⚠️', color:'#ff3366' },
+          { label:'تقرير مخصص', icon:'📊', color:'#ffaa00' },
+        ].map(t => (
+          <button key={t.label} style={{
+            background:'#070d1a', border:`1px solid #1a2540`,
+            borderRadius:'14px', padding:'20px 16px', cursor:'pointer',
+            textAlign:'right', transition:'all 0.25s', fontFamily:"'Cairo',sans-serif",
+            display:'flex', flexDirection:'column', gap:'10px',
+          }}
+          onMouseEnter={e=>{
+            const el=e.currentTarget as HTMLButtonElement
+            el.style.borderColor=`${t.color}35`
+            el.style.background=`${t.color}06`
+            el.style.transform='translateY(-2px)'
+          }}
+          onMouseLeave={e=>{
+            const el=e.currentTarget as HTMLButtonElement
+            el.style.borderColor='#1a2540'
+            el.style.background='#070d1a'
+            el.style.transform='translateY(0)'
+          }}
+          >
+            <div style={{ fontSize:'28px' }}>{t.icon}</div>
+            <div style={{ fontSize:'13px', fontWeight:700, color:'#e8f0ff' }}>{t.label}</div>
+            <div style={{ fontSize:'11px', color:'#3d4f6e' }}>إنشاء سريع →</div>
           </button>
         ))}
       </div>
 
       {/* Reports list */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-800">
-          <h2 className="font-semibold text-white">التقارير السابقة</h2>
+      <div style={{ background:'#070d1a', border:'1px solid #1a2540', borderRadius:'16px', overflow:'hidden', animation:'fadeUp 0.4s ease 0.15s both' }}>
+        <div style={{ padding:'16px 20px', borderBottom:'1px solid #1a2540', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <div style={{ fontSize:'14px', fontWeight:700, color:'#e8f0ff' }}>التقارير السابقة</div>
+          <div style={{ fontSize:'11px', color:'#3d4f6e' }}>{reports.length} تقارير</div>
         </div>
-        <div className="divide-y divide-slate-800">
-          {mockReports.map(report => (
-            <div key={report.id} className="px-5 py-4 flex items-center gap-4 hover:bg-slate-800/30 transition-colors">
-              <div className="w-10 h-10 bg-cyan-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                <FileBarChart size={18} className="text-cyan-400" />
+        {reports.map((r, i) => {
+          const sc = stColors[r.status]
+          return (
+            <div key={i} style={{
+              padding:'16px 20px',
+              borderBottom: i<reports.length-1?'1px solid #0d1428':'none',
+              display:'flex', alignItems:'center', gap:'14px',
+              transition:'all 0.2s', cursor:'pointer',
+              animation:`fadeUp 0.4s ease ${0.05*i+0.2}s both`,
+            }}
+            onMouseEnter={e=>{(e.currentTarget as HTMLDivElement).style.background='rgba(0,212,255,0.02)'}}
+            onMouseLeave={e=>{(e.currentTarget as HTMLDivElement).style.background='transparent'}}
+            >
+              <div style={{ width:'42px', height:'42px', borderRadius:'11px', background:'rgba(0,212,255,0.08)', border:'1px solid rgba(0,212,255,0.15)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                <FileBarChart size={18} color="#00d4ff"/>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-white text-sm">{report.title}</div>
-                <div className="flex items-center gap-3 mt-0.5 text-xs text-slate-400">
-                  <span>{typeLabels[report.type]}</span>
-                  <span>·</span>
-                  <div className="flex items-center gap-1">
-                    <Calendar size={10} />
-                    {report.period}
-                  </div>
-                  <span>·</span>
-                  <span>{report.created}</span>
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontSize:'13px', fontWeight:700, color:'#e8f0ff', marginBottom:'4px' }}>{r.title}</div>
+                <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+                  <span style={{ fontSize:'11px', color:'#6b7fa3' }}>{r.type}</span>
+                  <span style={{ display:'flex', alignItems:'center', gap:'4px', fontSize:'11px', color:'#6b7fa3' }}>
+                    <Calendar size={10}/>{r.period}
+                  </span>
+                  <span style={{ fontSize:'11px', color:'#3d4f6e' }}>{r.date}</span>
                 </div>
               </div>
-              <Badge variant={report.status === 'generated' ? 'info' : report.status === 'sent' ? 'success' : 'outline'}>
-                {report.status === 'generated' ? 'جاهز' : report.status === 'sent' ? 'تم الإرسال' : 'مسودة'}
-              </Badge>
-              {report.status !== 'draft' && (
-                <button className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors">
-                  <Download size={14} />
-                </button>
+              {r.score > 0 && (
+                <div style={{ display:'flex', alignItems:'center', gap:'5px', padding:'4px 10px', borderRadius:'7px', background:'rgba(0,230,118,0.08)', border:'1px solid rgba(0,230,118,0.2)' }}>
+                  <TrendingUp size={12} color="#00e676"/>
+                  <span style={{ fontSize:'12px', fontWeight:700, color:'#00e676' }}>{r.score}%</span>
+                </div>
+              )}
+              <div style={{ padding:'3px 10px', borderRadius:'6px', fontSize:'11px', fontWeight:700, background:`${sc}12`, color:sc, border:`1px solid ${sc}25`, flexShrink:0 }}>
+                {stLabels[r.status]}
+              </div>
+              {r.status !== 'draft' && (
+                <button style={{ width:'34px', height:'34px', borderRadius:'8px', border:'1px solid #1a2540', background:'transparent', color:'#6b7fa3', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', transition:'all 0.2s' }}
+                onMouseEnter={e=>{(e.currentTarget as HTMLButtonElement).style.borderColor='rgba(0,212,255,0.3)';(e.currentTarget as HTMLButtonElement).style.color='#00d4ff'}}
+                onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.borderColor='#1a2540';(e.currentTarget as HTMLButtonElement).style.color='#6b7fa3'}}
+                ><Download size={14}/></button>
               )}
             </div>
-          ))}
-        </div>
+          )
+        })}
       </div>
     </div>
   )

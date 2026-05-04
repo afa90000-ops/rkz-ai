@@ -1,11 +1,13 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { getWorkers, addWorker, deleteWorker } from '@/lib/queries'
-import { Search, Plus, X } from 'lucide-react'
+import { Search, Plus, X, Lock } from 'lucide-react'
+import { useRole } from '@/hooks/useRole'
 
 type WorkerRow = { id:string;name:string;name_ar:string;employee_id:string;phone:string;role_ar:string;department:string;is_active:boolean;safety_score:number;total_violations:number;total_hours:number }
 
 export default function WorkersPage() {
+  const { can } = useRole()
   const [workers, setWorkers] = useState<WorkerRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -82,7 +84,7 @@ export default function WorkersPage() {
           <h1 style={{ fontSize:'22px', fontWeight:800, color:'#e8f0ff' }}>إدارة العمال</h1>
           <p style={{ fontSize:'12px', color:'#3d4f6e', marginTop:'3px' }}>{workers.length} عامل مسجل</p>
         </div>
-        <button onClick={()=>setShowModal(true)} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 18px', borderRadius:'10px', background:'linear-gradient(135deg,#00d4ff,#0066ff)', border:'none', color:'white', fontSize:'13px', fontWeight:700, cursor:'pointer', fontFamily:"'Cairo',sans-serif", boxShadow:'0 0 20px rgba(0,212,255,.3)' }}>
+        <button onClick={()=>setShowModal(true)} disabled={!can('workers_add')} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 18px', borderRadius:'10px', background:'linear-gradient(135deg,#00d4ff,#0066ff)', border:'none', color:'white', fontSize:'13px', fontWeight:700, cursor:'pointer', fontFamily:"'Cairo',sans-serif", boxShadow:'0 0 20px rgba(0,212,255,.3)' }}>
           <Plus size={15}/> إضافة عامل
         </button>
       </div>

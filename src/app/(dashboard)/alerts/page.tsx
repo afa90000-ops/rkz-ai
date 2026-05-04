@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { getAlerts, updateAlertStatus } from '@/lib/queries'
 import { formatRelativeTime, getAlertTypeLabel } from '@/lib/utils'
 import { CheckCircle, XCircle, Clock, MapPin } from 'lucide-react'
+import { useRole } from '@/hooks/useRole'
 
 const severityColors: Record<string,string> = { critical:'#ff3366', high:'#ff7700', medium:'#ffaa00', low:'#00e676' }
 const severityLabels: Record<string,string> = { critical:'حرجة', high:'عالية', medium:'متوسطة', low:'منخفضة' }
@@ -12,6 +13,7 @@ const statusColors: Record<string,string> = { open:'#ff3366', acknowledged:'#ffa
 type AlertRow = { id:string; alert_type:string; severity:string; status:string; title_ar:string; location:string; confidence:number; created_at:string }
 
 export default function AlertsPage() {
+  const { can } = useRole()
   const [alerts, setAlerts] = useState<AlertRow[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('الكل')
@@ -116,7 +118,7 @@ export default function AlertsPage() {
                   <span style={{ display:'flex', alignItems:'center', gap:'4px', fontSize:'11px', color:'#3d4f6e' }}><Clock size={10}/>{formatRelativeTime(alert.created_at)}</span>
                 </div>
               </div>
-              {alert.status === 'open' && (
+              {alert.status === 'open' && can('alerts_resolve') && (
                 <div style={{ display:'flex', gap:'6px', flexShrink:0 }}>
                   <button onClick={()=>handleStatus(alert.id,'resolved')} style={{ width:'34px', height:'34px', borderRadius:'8px', border:'1px solid rgba(0,230,118,.3)', background:'rgba(0,230,118,.08)', color:'#00e676', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }} title="حل">
                     <CheckCircle size={15}/>

@@ -136,3 +136,157 @@ export async function addReport(report: {
   if (error) throw error
   return data
 }
+
+// ── Projects ──────────────────────────────────────
+export async function getProjects() {
+  const db = createClient()
+  const { data, error } = await db
+    .from('projects')
+    .select('*')
+    .eq('company_id', COMPANY_ID)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data || []
+}
+
+export async function updateProjectProgress(id: string, progress: number) {
+  const db = createClient()
+  const { error } = await db.from('projects').update({ progress }).eq('id', id)
+  if (error) throw error
+}
+
+// ── Equipment ──────────────────────────────────────
+export async function getEquipment() {
+  const db = createClient()
+  const { data, error } = await db
+    .from('equipment')
+    .select('*')
+    .eq('company_id', COMPANY_ID)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data || []
+}
+
+export async function updateEquipmentStatus(id: string, status: string) {
+  const db = createClient()
+  const { error } = await db.from('equipment').update({ status }).eq('id', id)
+  if (error) throw error
+}
+
+// ── Materials ──────────────────────────────────────
+export async function getMaterials() {
+  const db = createClient()
+  const { data, error } = await db
+    .from('materials')
+    .select('*')
+    .eq('company_id', COMPANY_ID)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data || []
+}
+
+// ── Issues ──────────────────────────────────────
+export async function getIssues() {
+  const db = createClient()
+  const { data, error } = await db
+    .from('issues')
+    .select('*')
+    .eq('company_id', COMPANY_ID)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data || []
+}
+
+export async function updateIssueStatus(id: string, status: string) {
+  const db = createClient()
+  const { error } = await db
+    .from('issues')
+    .update({ status, ...(status === 'resolved' ? { resolved_at: new Date().toISOString() } : {}) })
+    .eq('id', id)
+  if (error) throw error
+}
+
+export async function addIssue(issue: {
+  title: string; title_ar?: string; description?: string;
+  issue_type?: string; severity: string; location?: string; project_id?: string;
+}) {
+  const db = createClient()
+  const { data, error } = await db
+    .from('issues')
+    .insert({ ...issue, company_id: COMPANY_ID, status: 'open' })
+    .select().single()
+  if (error) throw error
+  return data
+}
+
+// ── Inspections ──────────────────────────────────────
+export async function getInspections() {
+  const db = createClient()
+  const { data, error } = await db
+    .from('inspections')
+    .select('*')
+    .eq('company_id', COMPANY_ID)
+    .order('scheduled_date', { ascending: false })
+  if (error) throw error
+  return data || []
+}
+
+// ── Schedules ──────────────────────────────────────
+export async function getSchedules() {
+  const db = createClient()
+  const { data, error } = await db
+    .from('schedules')
+    .select('*')
+    .eq('company_id', COMPANY_ID)
+    .order('planned_start', { ascending: true })
+  if (error) throw error
+  return data || []
+}
+
+// ── Progress Logs ──────────────────────────────────────
+export async function getProgressLogs() {
+  const db = createClient()
+  const { data, error } = await db
+    .from('progress_logs')
+    .select('*')
+    .eq('company_id', COMPANY_ID)
+    .order('date', { ascending: false })
+  if (error) throw error
+  return data || []
+}
+
+// ── Contractors ──────────────────────────────────────
+export async function getContractors() {
+  const db = createClient()
+  const { data, error } = await db
+    .from('contractors')
+    .select('*')
+    .eq('company_id', COMPANY_ID)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data || []
+}
+
+// ── Users ──────────────────────────────────────
+export async function getUsers() {
+  const db = createClient()
+  const { data, error } = await db
+    .from('users')
+    .select('*')
+    .eq('company_id', COMPANY_ID)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data || []
+}
+
+export async function updateUserRole(id: string, role: string) {
+  const db = createClient()
+  const { error } = await db.from('users').update({ role }).eq('id', id)
+  if (error) throw error
+}
+
+export async function toggleUserActive(id: string, is_active: boolean) {
+  const db = createClient()
+  const { error } = await db.from('users').update({ is_active }).eq('id', id)
+  if (error) throw error
+}

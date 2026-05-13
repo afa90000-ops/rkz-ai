@@ -3,17 +3,24 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { useState, useEffect } from 'react'
-import { LayoutDashboard, Camera, Bell, Users, FileBarChart, Settings, LogOut, Shield, ChevronRight, Activity, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Camera, Bell, Users, FileBarChart, Settings, LogOut, Shield, ChevronRight, Activity, Menu, X, Building2, Wrench, Package, AlertTriangle, Map, UserCog, BarChart3 } from 'lucide-react'
 import { useRole } from '@/hooks/useRole'
 import { can, UserRole } from '@/lib/roles'
 
 const navItems = [
-  { href:'/dashboard', label:'لوحة التحكم', icon:LayoutDashboard, badge:null, badgeAlert:false, permission:null },
-  { href:'/cameras',   label:'الكاميرات',   icon:Camera,          badge:'6',  badgeAlert:false, permission:null },
-  { href:'/alerts',    label:'التنبيهات',   icon:Bell,            badge:'3',  badgeAlert:true,  permission:null },
-  { href:'/workers',   label:'العمال',      icon:Users,           badge:null, badgeAlert:false, permission:null },
-  { href:'/reports',   label:'التقارير',   icon:FileBarChart,    badge:null, badgeAlert:false, permission:null },
-  { href:'/settings',  label:'الإعدادات',  icon:Settings,        badge:null, badgeAlert:false, permission:'settings_view' as const },
+  { href:'/dashboard', label:'لوحة التحكم',   icon:LayoutDashboard, badge:null, badgeAlert:false, permission:null },
+  { href:'/cameras',   label:'الكاميرات',     icon:Camera,          badge:null, badgeAlert:false, permission:null },
+  { href:'/alerts',    label:'التنبيهات',     icon:Bell,            badge:null, badgeAlert:true,  permission:null },
+  { href:'/workers',   label:'العمال',        icon:Users,           badge:null, badgeAlert:false, permission:null },
+  { href:'/projects',  label:'المشاريع',      icon:Building2,       badge:null, badgeAlert:false, permission:null },
+  { href:'/equipment', label:'المعدات',       icon:Wrench,          badge:null, badgeAlert:false, permission:null },
+  { href:'/materials', label:'المواد',        icon:Package,         badge:null, badgeAlert:false, permission:null },
+  { href:'/issues',    label:'الملاحظات',     icon:AlertTriangle,   badge:null, badgeAlert:false, permission:null },
+  { href:'/map',       label:'الخريطة',       icon:Map,             badge:null, badgeAlert:false, permission:null },
+  { href:'/analytics', label:'التحليلات',     icon:BarChart3,       badge:null, badgeAlert:false, permission:null },
+  { href:'/reports',   label:'التقارير',      icon:FileBarChart,    badge:null, badgeAlert:false, permission:null },
+  { href:'/users',     label:'المستخدمون',    icon:UserCog,         badge:null, badgeAlert:false, permission:'settings_view' as const },
+  { href:'/settings',  label:'الإعدادات',    icon:Settings,        badge:null, badgeAlert:false, permission:'settings_view' as const },
 ]
 
 export function Sidebar() {

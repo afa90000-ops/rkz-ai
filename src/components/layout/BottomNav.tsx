@@ -1,14 +1,19 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Camera, Bell, Users, FileBarChart } from 'lucide-react'
+import { LayoutDashboard, Camera, Bell, Users, Building2, Wrench, Package, AlertTriangle, Map, BarChart3 } from 'lucide-react'
 
 const items = [
   { href:'/dashboard', label:'الرئيسية', icon:LayoutDashboard },
   { href:'/cameras', label:'الكاميرات', icon:Camera },
   { href:'/alerts', label:'التنبيهات', icon:Bell, alert:true },
+  { href:'/projects', label:'المشاريع', icon:Building2 },
   { href:'/workers', label:'العمال', icon:Users },
-  { href:'/reports', label:'التقارير', icon:FileBarChart },
+  { href:'/equipment', label:'المعدات', icon:Wrench },
+  { href:'/materials', label:'المواد', icon:Package },
+  { href:'/issues', label:'الملاحظات', icon:AlertTriangle },
+  { href:'/map', label:'الخريطة', icon:Map },
+  { href:'/analytics', label:'التحليلات', icon:BarChart3 },
 ]
 
 export function BottomNav() {

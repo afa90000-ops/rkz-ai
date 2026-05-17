@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { getUsers, updateUserRole, toggleUserActive } from '@/lib/queries'
-import { Search, Shield, Lock } from 'lucide-react'
+import { getUsers, updateUserRole, toggleUserActive, addUser } from '@/lib/queries'
+import { Search, Shield, Lock, Plus, X } from 'lucide-react'
 import { useRole } from '@/hooks/useRole'
 import { can, UserRole } from '@/lib/roles'
 
@@ -23,12 +23,27 @@ export default function UsersPage() {
   const [users, setUsers] = useState<UserRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [showModal, setShowModal] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ full_name_ar: '', email: '', role: 'viewer', password: 'rkz@2025' })
+  const S = { input: { width:'100%', padding:'10px 14px', background:'rgba(4,8,18,.8)', border:'1px solid #1a2540', borderRadius:'9px', color:'#e8f0ff', fontSize:'13px', outline:'none', fontFamily:"'Cairo',sans-serif" } as React.CSSProperties }
 
   async function load() {
     setLoading(true)
     try { setUsers(await getUsers() as UserRow[]) } finally { setLoading(false) }
   }
   useEffect(() => { load() }, [])
+
+  async function handleAdd() {
+    if (!form.full_name_ar || !form.email) return
+    setSaving(true)
+    try {
+      await addUser({ full_name_ar: form.full_name_ar, email: form.email, role: form.role, password: form.password })
+      setShowModal(false)
+      setForm({ full_name_ar: '', email: '', role: 'viewer', password: 'rkz@2025' })
+      await load()
+    } finally { setSaving(false) }
+  }
 
   async function handleRole(id: string, newRole: string) {
     await updateUserRole(id, newRole)
@@ -59,14 +74,60 @@ export default function UsersPage() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <style>{`@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}`}</style>
 
+      {showModal && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.7)', zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(4px)' }}>
+          <div style={{ background:'#070d1a', border:'1px solid #1a2540', borderRadius:'20px', padding:'28px', width:'440px', boxShadow:'0 24px 80px rgba(0,0,0,.6)' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'24px' }}>
+              <div style={{ fontSize:'16px', fontWeight:800, color:'#e8f0ff' }}>إضافة مستخدم جديد</div>
+              <button onClick={()=>setShowModal(false)} style={{ background:'none', border:'none', color:'#6b7fa3', cursor:'pointer' }}><X size={20}/></button>
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+              <div>
+                <label style={{ display:'block', fontSize:'11px', fontWeight:700, color:'#3d4f6e', marginBottom:'5px', textTransform:'uppercase', letterSpacing:'.05em' }}>الاسم الكامل*</label>
+                <input value={form.full_name_ar} onChange={e=>setForm(p=>({...p,full_name_ar:e.target.value}))} placeholder="اسم المستخدم" style={S.input}/>
+              </div>
+              <div>
+                <label style={{ display:'block', fontSize:'11px', fontWeight:700, color:'#3d4f6e', marginBottom:'5px', textTransform:'uppercase', letterSpacing:'.05em' }}>البريد الإلكتروني*</label>
+                <input value={form.email} onChange={e=>setForm(p=>({...p,email:e.target.value}))} placeholder="user@example.com" type="email" dir="ltr" style={S.input}/>
+              </div>
+              <div>
+                <label style={{ display:'block', fontSize:'11px', fontWeight:700, color:'#3d4f6e', marginBottom:'5px', textTransform:'uppercase', letterSpacing:'.05em' }}>الدور</label>
+                <select value={form.role} onChange={e=>setForm(p=>({...p,role:e.target.value}))} style={{...S.input, cursor:'pointer'}}>
+                  <option value="admin">مدير النظام</option>
+                  <option value="manager">مدير مشروع</option>
+                  <option value="engineer">مهندس</option>
+                  <option value="viewer">مشاهد</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display:'block', fontSize:'11px', fontWeight:700, color:'#3d4f6e', marginBottom:'5px', textTransform:'uppercase', letterSpacing:'.05em' }}>كلمة المرور الأولية</label>
+                <input value={form.password} onChange={e=>setForm(p=>({...p,password:e.target.value}))} placeholder="rkz@2025" style={S.input}/>
+                <p style={{ fontSize:'10px', color:'#3d4f6e', marginTop:'4px' }}>سيقوم المستخدم بتغييرها عند أول دخول</p>
+              </div>
+            </div>
+            <div style={{ display:'flex', gap:'10px', marginTop:'20px' }}>
+              <button onClick={()=>setShowModal(false)} style={{ flex:1, padding:'11px', borderRadius:'9px', border:'1px solid #1a2540', background:'transparent', color:'#6b7fa3', cursor:'pointer', fontFamily:"'Cairo',sans-serif", fontSize:'13px' }}>إلغاء</button>
+              <button onClick={handleAdd} disabled={saving||!form.full_name_ar||!form.email} style={{ flex:2, padding:'11px', borderRadius:'9px', border:'none', background:'linear-gradient(135deg,#ff6b35,#0066ff)', color:'white', cursor:'pointer', fontFamily:"'Cairo',sans-serif", fontSize:'13px', fontWeight:700, opacity:saving||!form.full_name_ar||!form.email?0.6:1 }}>
+                {saving?'جاري الإضافة...':'+ إضافة المستخدم'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#e8f0ff' }}>إدارة المستخدمين</h1>
           <p style={{ fontSize: '12px', color: '#3d4f6e', marginTop: '3px' }}>{users.length} مستخدم مسجل</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 14px', borderRadius: '10px', background: 'rgba(255,107,53,.08)', border: '1px solid rgba(255,107,53,.2)' }}>
-          <Shield size={14} color="#ff6b35" />
-          <span style={{ fontSize: '12px', color: '#ff6b35', fontWeight: 700 }}>للأدمن فقط</span>
+        <div style={{ display:'flex', gap:'10px', alignItems:'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 14px', borderRadius: '10px', background: 'rgba(255,107,53,.08)', border: '1px solid rgba(255,107,53,.2)' }}>
+            <Shield size={14} color="#ff6b35" />
+            <span style={{ fontSize: '12px', color: '#ff6b35', fontWeight: 700 }}>للأدمن فقط</span>
+          </div>
+          <button onClick={()=>setShowModal(true)} style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'10px', background:'linear-gradient(135deg,#0066ff,#00d4ff)', border:'none', color:'white', fontSize:'13px', fontWeight:700, cursor:'pointer', fontFamily:"'Cairo',sans-serif" }}>
+            <Plus size={14}/> إضافة مستخدم
+          </button>
         </div>
       </div>
 

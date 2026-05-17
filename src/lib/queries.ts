@@ -290,3 +290,43 @@ export async function toggleUserActive(id: string, is_active: boolean) {
   const { error } = await db.from('users').update({ is_active }).eq('id', id)
   if (error) throw error
 }
+
+export async function addUser(user: {
+  full_name_ar: string; email: string; role: string; password: string;
+}) {
+  const db = createClient()
+  // Hash password via API route (server-side SHA-256)
+  const hashRes = await fetch('/api/hash-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password: user.password }),
+  })
+  const { hash } = await hashRes.json()
+  const { data, error } = await db
+    .from('users')
+    .insert({
+      full_name: user.full_name_ar,
+      full_name_ar: user.full_name_ar,
+      email: user.email,
+      role: user.role,
+      company_id: COMPANY_ID,
+      password_hash: hash,
+      is_active: true,
+    })
+    .select().single()
+  if (error) throw error
+  return data
+}
+
+// ── Email Notifications ──────────────────────────────────────
+export async function sendAlertEmail(alert: {
+  title: string; severity: string; location?: string; alert_type: string;
+}) {
+  try {
+    await fetch('/api/email/alert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(alert),
+    })
+  } catch {}
+}

@@ -16,7 +16,31 @@
   --text: #e8f0ff;
   --muted: #6b7fa3;
   --dim: #3d4f6e;
+  --sidebar-bg: linear-gradient(180deg,#060c1a 0%,#040812 100%);
+  --topbar-bg: rgba(7,13,26,.9);
+  --bottomnav-bg: rgba(7,13,26,.97);
 }
+
+/* ── Light Mode ──────────────────────────────── */
+html[data-theme="light"] {
+  --bg: #f0f4ff;
+  --bg2: #ffffff;
+  --card: #f8faff;
+  --border: #dde5f5;
+  --border2: #c8d5e8;
+  --cyan: #0055cc;
+  --blue: #0044bb;
+  --red: #cc1144;
+  --amber: #cc7700;
+  --green: #007744;
+  --text: #0f172a;
+  --muted: #475569;
+  --dim: #94a3b8;
+  --sidebar-bg: linear-gradient(180deg,#e8eeff 0%,#f0f4ff 100%);
+  --topbar-bg: rgba(240,244,255,.95);
+  --bottomnav-bg: rgba(240,244,255,.97);
+}
+html[data-theme="light"] body { background: #f0f4ff; color: #0f172a; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }

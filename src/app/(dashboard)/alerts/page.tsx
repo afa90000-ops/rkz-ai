@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react'
 import { getAlerts, updateAlertStatus } from '@/lib/queries'
 import { formatRelativeTime, getAlertTypeLabel } from '@/lib/utils'
-import { CheckCircle, XCircle, Clock, MapPin } from 'lucide-react'
+import { exportCSV } from '@/lib/export'
+import { CheckCircle, XCircle, Clock, MapPin, Download } from 'lucide-react'
 import { useRole } from '@/hooks/useRole'
 
 const severityColors: Record<string,string> = { critical:'#ff3366', high:'#ff7700', medium:'#ffaa00', low:'#00e676' }
@@ -45,15 +46,27 @@ export default function AlertsPage() {
           <h1 style={{ fontSize:'22px', fontWeight:800, color:'#e8f0ff' }}>مركز التنبيهات</h1>
           <p style={{ fontSize:'12px', color:'#3d4f6e', marginTop:'3px' }}>مراقبة في الوقت الفعلي</p>
         </div>
-        {!loading && (
-          <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'10px', background:'rgba(255,51,102,.08)', border:'1px solid rgba(255,51,102,.2)' }}>
-            <div style={{ position:'relative' }}>
-              <div style={{ width:'7px', height:'7px', borderRadius:'50%', background:'#ff3366' }}/>
-              <div style={{ position:'absolute', inset:'-2px', borderRadius:'50%', background:'rgba(255,51,102,.4)', animation:'ping 1.5s infinite' }}/>
+        <div style={{ display:'flex', gap:'10px', alignItems:'center' }}>
+          {!loading && (
+            <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'8px 16px', borderRadius:'10px', background:'rgba(255,51,102,.08)', border:'1px solid rgba(255,51,102,.2)' }}>
+              <div style={{ position:'relative' }}>
+                <div style={{ width:'7px', height:'7px', borderRadius:'50%', background:'#ff3366' }}/>
+                <div style={{ position:'absolute', inset:'-2px', borderRadius:'50%', background:'rgba(255,51,102,.4)', animation:'ping 1.5s infinite' }}/>
+              </div>
+              <span style={{ fontSize:'13px', fontWeight:700, color:'#ff3366' }}>{alerts.filter(a=>a.status==='open').length} مفتوح</span>
             </div>
-            <span style={{ fontSize:'13px', fontWeight:700, color:'#ff3366' }}>{alerts.filter(a=>a.status==='open').length} مفتوح</span>
-          </div>
-        )}
+          )}
+          <button onClick={() => exportCSV('تنبيهات', filtered, [
+            { key:'title_ar', label:'العنوان' },
+            { key:'alert_type', label:'النوع' },
+            { key:'severity', label:'الخطورة' },
+            { key:'status', label:'الحالة' },
+            { key:'location', label:'الموقع' },
+            { key:'created_at', label:'التاريخ' },
+          ])} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'8px 14px', borderRadius:'10px', border:'1px solid #1a2540', background:'#070d1a', color:'#6b7fa3', cursor:'pointer', fontSize:'12px', fontWeight:600, fontFamily:"'Cairo',sans-serif" }}>
+            <Download size={13}/> تصدير CSV
+          </button>
+        </div>
       </div>
 
       {/* Summary */}

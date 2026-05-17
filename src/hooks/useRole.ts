@@ -6,10 +6,12 @@ export function useRole() {
   const { data: session } = useSession()
   const role = ((session?.user as { role?: string })?.role || 'viewer') as UserRole
   const name = (session?.user?.name || '') as string
+  const email = (session?.user?.email || '') as string
 
   return {
     role,
     name,
+    email,
     label: ROLE_LABELS[role],
     color: ROLE_COLORS[role],
     badge: ROLE_BADGES[role],

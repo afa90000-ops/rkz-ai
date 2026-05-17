@@ -1,8 +1,8 @@
 'use client'
 import { useRole } from '@/hooks/useRole'
 import { useTheme } from 'next-themes'
-import { useRealtimeAlerts } from '@/hooks/useRealtimeAlerts'
-import { Sun, Moon, Bell } from 'lucide-react'
+import { useRealtimeAlerts, requestNotificationPermission } from '@/hooks/useRealtimeAlerts'
+import { Sun, Moon, Bell, BellOff } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
@@ -11,7 +11,12 @@ export function TopBar() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [showPing, setShowPing] = useState(false)
+  const [notifPermission, setNotifPermission] = useState<string>('default')
   const { count, clear } = useRealtimeAlerts(() => setShowPing(true))
+
+  useEffect(() => {
+    if ('Notification' in window) setNotifPermission(Notification.permission)
+  }, [])
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -42,6 +47,19 @@ export function TopBar() {
           <span style={{ fontSize:'12px', color:mutedClr }}>🔍</span>
           <input placeholder="بحث..." style={{ background:'none', border:'none', outline:'none', color:textClr, fontSize:'12px', width:'130px', fontFamily:"'Cairo',sans-serif" }}/>
         </div>
+
+        {/* Browser Notifications toggle */}
+        {notifPermission !== 'denied' && (
+          <button
+            title={notifPermission === 'granted' ? 'إشعارات المتصفح مفعّلة' : 'تفعيل إشعارات المتصفح'}
+            onClick={async () => {
+              const granted = await requestNotificationPermission()
+              setNotifPermission(granted ? 'granted' : 'denied')
+            }}
+            style={{ width:'36px', height:'36px', borderRadius:'8px', background: notifPermission === 'granted' ? 'rgba(0,230,118,.1)' : cardBg, border:`1px solid ${notifPermission === 'granted' ? 'rgba(0,230,118,.3)' : borderClr}`, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', transition:'all .2s', color: notifPermission === 'granted' ? '#00e676' : mutedClr }}>
+            {notifPermission === 'granted' ? <Bell size={14}/> : <BellOff size={14}/>}
+          </button>
+        )}
 
         {/* Theme Toggle */}
         <button onClick={toggleTheme} title={isDark ? 'وضع فاتح' : 'وضع داكن'}

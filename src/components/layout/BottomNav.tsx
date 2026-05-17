@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Camera, Bell, Users, Building2, Wrench, Package, AlertTriangle, Map, BarChart3 } from 'lucide-react'
+import { LayoutDashboard, Camera, Bell, Users, Building2, Wrench, Package, AlertTriangle, Map, BarChart3, Bot, Box, Cpu } from 'lucide-react'
 
 const items = [
   { href:'/dashboard', label:'الرئيسية', icon:LayoutDashboard },
@@ -14,6 +14,9 @@ const items = [
   { href:'/issues', label:'الملاحظات', icon:AlertTriangle },
   { href:'/map', label:'الخريطة', icon:Map },
   { href:'/analytics', label:'التحليلات', icon:BarChart3 },
+  { href:'/ai',        label:'الذكاء AI', icon:Bot },
+  { href:'/twin',      label:'التوأم',    icon:Box },
+  { href:'/edge',      label:'Edge AI',   icon:Cpu },
 ]
 
 export function BottomNav() {

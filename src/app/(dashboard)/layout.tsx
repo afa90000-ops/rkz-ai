@@ -4,7 +4,7 @@ import { TopBar } from '@/components/layout/TopBar'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ minHeight:'100vh', background:'#040812', direction:'rtl' }}>
+    <div style={{ minHeight:'100vh', background:'var(--bg)', direction:'rtl', transition:'background .3s' }}>
       <Sidebar />
       <main className="main-content">
         <TopBar />

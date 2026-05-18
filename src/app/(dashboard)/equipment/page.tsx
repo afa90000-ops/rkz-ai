@@ -1,7 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { getEquipment, updateEquipmentStatus } from '@/lib/queries'
-import { Search, Wrench, Zap, Battery } from 'lucide-react'
+import { exportCSV } from '@/lib/export'
+import { Search, Wrench, Zap, Battery, Download } from 'lucide-react'
 
 type EquipmentRow = {
   id: string; name: string; name_ar?: string; equipment_type: string;
@@ -87,6 +88,14 @@ export default function EquipmentPage() {
           <Search size={15} color="#3d4f6e" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="ابحث بالاسم أو الرقم التسلسلي..." style={{ background: 'none', border: 'none', outline: 'none', color: '#e8f0ff', fontSize: '13px', flex: 1, fontFamily: "'Cairo',sans-serif" }} />
         </div>
+        <button onClick={() => exportCSV('معدات', filtered, [
+          { key:'name_ar', label:'الاسم' }, { key:'equipment_type', label:'النوع' },
+          { key:'status', label:'الحالة' }, { key:'serial_number', label:'الرقم التسلسلي' },
+          { key:'location', label:'الموقع' }, { key:'total_hours', label:'ساعات التشغيل' },
+          { key:'fuel_level', label:'مستوى الوقود' }, { key:'next_maintenance', label:'الصيانة القادمة' },
+        ])} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'10px 14px', borderRadius:'10px', border:'1px solid #1a2540', background:'#070d1a', color:'#6b7fa3', cursor:'pointer', fontSize:'12px', fontWeight:600, fontFamily:"'Cairo',sans-serif", whiteSpace:'nowrap' }}>
+          <Download size={13}/> تصدير CSV
+        </button>
         {['all', 'active', 'idle', 'maintenance', 'breakdown'].map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{ padding: '10px 14px', borderRadius: '10px', border: filter === f ? `1px solid ${(statusMap[f] || { color: '#00d4ff' }).color}40` : '1px solid #1a2540', background: filter === f ? `${(statusMap[f] || { color: '#00d4ff' }).color}10` : '#070d1a', color: filter === f ? (statusMap[f] || { color: '#00d4ff' }).color : '#6b7fa3', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: "'Cairo',sans-serif" }}>
             {{ all: 'الكل', active: 'يعمل', idle: 'خامل', maintenance: 'صيانة', breakdown: 'معطل' }[f]}

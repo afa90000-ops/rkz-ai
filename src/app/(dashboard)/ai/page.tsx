@@ -2,6 +2,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { Send, Mic, MicOff, Image, AlertTriangle, Bot, Upload, RefreshCw } from 'lucide-react'
 import { useVoiceCommands } from '@/hooks/useVoiceCommands'
+import { getDashboardStats, getAlerts, getEquipment, getMaterials } from '@/lib/queries'
 
 type Message = { role: 'user' | 'assistant'; content: string }
 
@@ -41,6 +42,7 @@ export default function AIPage() {
   // ── Risk state ──
   const [riskResult, setRiskResult] = useState<Record<string, unknown> | null>(null)
   const [riskLoading, setRiskLoading] = useState(false)
+  const [riskSiteData, setRiskSiteData] = useState<Record<string, unknown> | null>(null)
 
   // ── Voice ──
   const { listening, transcript, supported: voiceSupported, start: startVoice, stop: stopVoice } = useVoiceCommands({
@@ -140,19 +142,38 @@ export default function AIPage() {
   const handleRiskAnalysis = async () => {
     setRiskLoading(true)
     setRiskResult(null)
-    const siteData = {
-      openAlerts: 12,
-      criticalAlerts: 3,
-      workersWithoutHelmet: 2,
-      workersWithoutVest: 5,
-      equipmentInMaintenance: 2,
-      lowStockMaterials: 4,
-      weatherCondition: 'حار وجاف',
-      activeWorkers: 45,
-      projectProgress: 67,
-      lastIncidentDays: 14,
-    }
     try {
+      const [stats, alerts, equipment, materials] = await Promise.all([
+        getDashboardStats(),
+        getAlerts(),
+        getEquipment(),
+        getMaterials(),
+      ])
+      type AlertRow = { severity: string; status: string; alert_type: string }
+      type EquipRow = { status: string }
+      type MatRow = { quantity: number; minimum_quantity: number }
+
+      const siteData = {
+        totalCameras: stats.totalCameras,
+        onlineCameras: stats.onlineCameras,
+        totalWorkers: stats.totalWorkers,
+        activeWorkers: stats.activeWorkers,
+        openAlerts: stats.openAlerts,
+        criticalAlerts: stats.criticalAlerts,
+        totalProjects: stats.totalProjects,
+        activeProjects: stats.activeProjects,
+        resolvedAlerts: (alerts as AlertRow[]).filter(a => a.status === 'resolved').length,
+        noHelmetAlerts: (alerts as AlertRow[]).filter(a => a.alert_type === 'no_helmet' && a.status === 'open').length,
+        noVestAlerts: (alerts as AlertRow[]).filter(a => a.alert_type === 'no_vest' && a.status === 'open').length,
+        fireAlerts: (alerts as AlertRow[]).filter(a => a.alert_type === 'fire' && a.status === 'open').length,
+        intrusionAlerts: (alerts as AlertRow[]).filter(a => a.alert_type === 'intrusion' && a.status === 'open').length,
+        equipmentTotal: (equipment as EquipRow[]).length,
+        equipmentInMaintenance: (equipment as EquipRow[]).filter(e => e.status === 'maintenance').length,
+        equipmentBreakdown: (equipment as EquipRow[]).filter(e => e.status === 'breakdown').length,
+        lowStockMaterials: (materials as MatRow[]).filter(m => m.quantity <= m.minimum_quantity).length,
+        totalMaterials: (materials as MatRow[]).length,
+      }
+      setRiskSiteData(siteData)
       const res = await fetch('/api/ai/risks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -324,15 +345,17 @@ export default function AIPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ background: '#070d1a', border: '1px solid #1a2540', borderRadius: '16px', padding: '20px' }}>
             <div style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '14px', fontWeight: 700, color: '#e8f0ff', marginBottom: '4px' }}>بيانات الموقع المستخدمة للتحليل</div>
-              <div style={{ fontSize: '12px', color: '#3d4f6e' }}>يستخدم النظام بيانات الموقع الحالية لتوقع المخاطر المحتملة</div>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: '#e8f0ff', marginBottom: '4px' }}>بيانات الموقع الحقيقية</div>
+              <div style={{ fontSize: '12px', color: riskSiteData ? '#00e676' : '#3d4f6e' }}>
+                {riskSiteData ? '✓ تم تحميل البيانات من قاعدة البيانات' : 'سيتم تحميل البيانات الحقيقية عند الضغط على التحليل'}
+              </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '10px', marginBottom: '16px' }}>
               {[
-                { label: 'تنبيهات مفتوحة', value: '12', color: '#ff6b35' },
-                { label: 'تنبيهات حرجة', value: '3', color: '#ff3366' },
-                { label: 'عمال نشطون', value: '45', color: '#00d4ff' },
-                { label: 'تقدم المشروع', value: '67%', color: '#00e676' },
+                { label: 'تنبيهات مفتوحة', value: riskSiteData ? String(riskSiteData.openAlerts) : '—', color: '#ff6b35' },
+                { label: 'تنبيهات حرجة',   value: riskSiteData ? String(riskSiteData.criticalAlerts) : '—', color: '#ff3366' },
+                { label: 'عمال نشطون',     value: riskSiteData ? String(riskSiteData.activeWorkers) : '—', color: '#00d4ff' },
+                { label: 'معدات بالصيانة', value: riskSiteData ? String(riskSiteData.equipmentInMaintenance) : '—', color: '#ffb300' },
               ].map((s, i) => (
                 <div key={i} style={{ background: `${s.color}08`, border: `1px solid ${s.color}20`, borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
                   <div style={{ fontSize: '20px', fontWeight: 900, color: s.color }}>{s.value}</div>

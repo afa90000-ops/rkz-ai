@@ -1,7 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { getWorkers, addWorker, deleteWorker } from '@/lib/queries'
-import { Search, Plus, X, Lock } from 'lucide-react'
+import { exportCSV } from '@/lib/export'
+import { Search, Plus, X, Lock, Download } from 'lucide-react'
 import { useRole } from '@/hooks/useRole'
 
 type WorkerRow = { id:string;name:string;name_ar:string;employee_id:string;phone:string;role_ar:string;department:string;is_active:boolean;safety_score:number;total_violations:number;total_hours:number }
@@ -103,9 +104,19 @@ export default function WorkersPage() {
         ))}
       </div>
 
-      <div style={{ display:'flex', alignItems:'center', gap:'8px', padding:'10px 16px', background:'#070d1a', border:'1px solid #1a2540', borderRadius:'10px' }}>
-        <Search size={15} color="#3d4f6e"/>
-        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="ابحث باسم العامل أو رقم الموظف أو القسم..." style={{ background:'none', border:'none', outline:'none', color:'#e8f0ff', fontSize:'13px', flex:1, fontFamily:"'Cairo',sans-serif" }}/>
+      <div style={{ display:'flex', gap:'10px' }}>
+        <div style={{ flex:1, display:'flex', alignItems:'center', gap:'8px', padding:'10px 16px', background:'#070d1a', border:'1px solid #1a2540', borderRadius:'10px' }}>
+          <Search size={15} color="#3d4f6e"/>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="ابحث باسم العامل أو رقم الموظف أو القسم..." style={{ background:'none', border:'none', outline:'none', color:'#e8f0ff', fontSize:'13px', flex:1, fontFamily:"'Cairo',sans-serif" }}/>
+        </div>
+        <button onClick={() => exportCSV('عمال', filtered, [
+          { key:'name_ar', label:'الاسم' }, { key:'employee_id', label:'رقم الموظف' },
+          { key:'role_ar', label:'الدور' }, { key:'department', label:'القسم' },
+          { key:'phone', label:'الهاتف' }, { key:'safety_score', label:'نقاط السلامة' },
+          { key:'is_active', label:'نشط' }, { key:'total_violations', label:'المخالفات' },
+        ])} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'10px 14px', borderRadius:'10px', border:'1px solid #1a2540', background:'#070d1a', color:'#6b7fa3', cursor:'pointer', fontSize:'12px', fontWeight:600, fontFamily:"'Cairo',sans-serif", whiteSpace:'nowrap' }}>
+          <Download size={13}/> تصدير CSV
+        </button>
       </div>
 
       <div style={{ background:'#070d1a', border:'1px solid #1a2540', borderRadius:'16px', overflow:'hidden' }}>

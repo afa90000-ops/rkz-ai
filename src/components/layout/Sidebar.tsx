@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { useState, useEffect } from 'react'
-import { LayoutDashboard, Camera, Bell, Users, FileBarChart, Settings, LogOut, Shield, ChevronRight, Activity, Menu, X, Building2, Wrench, Package, AlertTriangle, Map, UserCog, BarChart3 } from 'lucide-react'
+import { LayoutDashboard, Camera, Bell, Users, FileBarChart, Settings, LogOut, Shield, ChevronRight, Activity, Menu, X, Building2, Wrench, Package, AlertTriangle, Map, UserCog, BarChart3, Bot, Box, Cpu } from 'lucide-react'
 import { useRole } from '@/hooks/useRole'
 import { can, UserRole } from '@/lib/roles'
 
@@ -19,6 +19,9 @@ const navItems = [
   { href:'/map',       label:'الخريطة',       icon:Map,             badge:null, badgeAlert:false, permission:null },
   { href:'/analytics', label:'التحليلات',     icon:BarChart3,       badge:null, badgeAlert:false, permission:null },
   { href:'/reports',   label:'التقارير',      icon:FileBarChart,    badge:null, badgeAlert:false, permission:null },
+  { href:'/ai',        label:'الذكاء AI',     icon:Bot,             badge:'جديد', badgeAlert:false, permission:null },
+  { href:'/twin',      label:'التوأم الرقمي', icon:Box,             badge:null, badgeAlert:false, permission:null },
+  { href:'/edge',      label:'Edge AI',       icon:Cpu,             badge:null, badgeAlert:false, permission:null },
   { href:'/users',     label:'المستخدمون',    icon:UserCog,         badge:null, badgeAlert:false, permission:'settings_view' as const },
   { href:'/settings',  label:'الإعدادات',    icon:Settings,        badge:null, badgeAlert:false, permission:'settings_view' as const },
 ]

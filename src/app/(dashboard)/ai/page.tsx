@@ -1,17 +1,18 @@
 'use client'
 import { useCallback, useRef, useState } from 'react'
-import { Send, Mic, MicOff, Image, AlertTriangle, Bot, Upload, RefreshCw } from 'lucide-react'
+import { Send, Mic, MicOff, Image, AlertTriangle, Bot, Upload, RefreshCw, TrendingUp, ChevronUp, ChevronDown, Minus } from 'lucide-react'
 import { useVoiceCommands } from '@/hooks/useVoiceCommands'
 import { getDashboardStats, getAlerts, getEquipment, getMaterials } from '@/lib/queries'
 
 type Message = { role: 'user' | 'assistant'; content: string }
 
-type Tab = 'chat' | 'vision' | 'risks'
+type Tab = 'chat' | 'vision' | 'risks' | 'trends'
 
 const tabs: { id: Tab; label: string; icon: React.ComponentType<{ size?: number; color?: string }> }[] = [
   { id: 'chat', label: 'المساعد الذكي', icon: Bot },
   { id: 'vision', label: 'تحليل الصور', icon: Image },
   { id: 'risks', label: 'التنبؤ بالمخاطر', icon: AlertTriangle },
+  { id: 'trends', label: 'الاتجاهات', icon: TrendingUp },
 ]
 
 const RISK_SEVERITY_COLORS: Record<string, string> = {
@@ -43,6 +44,10 @@ export default function AIPage() {
   const [riskResult, setRiskResult] = useState<Record<string, unknown> | null>(null)
   const [riskLoading, setRiskLoading] = useState(false)
   const [riskSiteData, setRiskSiteData] = useState<Record<string, unknown> | null>(null)
+
+  // ── Trends state ──
+  const [trendsResult, setTrendsResult] = useState<Record<string, unknown> | null>(null)
+  const [trendsLoading, setTrendsLoading] = useState(false)
 
   // ── Voice ──
   const { listening, transcript, supported: voiceSupported, start: startVoice, stop: stopVoice } = useVoiceCommands({
@@ -182,6 +187,16 @@ export default function AIPage() {
       const data = await res.json()
       setRiskResult(data)
     } catch { setRiskResult({ error: 'فشل تحليل المخاطر' }) } finally { setRiskLoading(false) }
+  }
+
+  const handleTrendsAnalysis = async () => {
+    setTrendsLoading(true)
+    setTrendsResult(null)
+    try {
+      const res = await fetch('/api/ai/trends', { method: 'POST' })
+      const data = await res.json()
+      setTrendsResult(data)
+    } catch { setTrendsResult({ error: 'فشل تحليل الاتجاهات' }) } finally { setTrendsLoading(false) }
   }
 
   const inputStyle: React.CSSProperties = {
@@ -418,6 +433,122 @@ export default function AIPage() {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Trends Tab ── */}
+      {activeTab === 'trends' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Header */}
+          <div style={{ background: '#070d1a', border: '1px solid #1a2540', borderRadius: '16px', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontSize: '15px', fontWeight: 800, color: '#e8f0ff', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <TrendingUp size={18} color="#00d4ff"/> تحليل الاتجاهات بالذكاء الاصطناعي
+              </div>
+              <div style={{ fontSize: '12px', color: '#3d4f6e', marginTop: '4px' }}>يحلل Claude بيانات 30 يوماً الماضية ويستخرج رؤى قابلة للتطبيق</div>
+            </div>
+            <button onClick={handleTrendsAnalysis} disabled={trendsLoading} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '11px 22px', borderRadius: '10px', background: 'linear-gradient(135deg,#00d4ff,#0066ff)', border: 'none', color: 'white', fontSize: '13px', fontWeight: 700, cursor: trendsLoading ? 'not-allowed' : 'pointer', fontFamily: "'Cairo',sans-serif", opacity: trendsLoading ? 0.7 : 1 }}>
+              {trendsLoading ? <><RefreshCw size={14} style={{ animation: 'spin 1s linear infinite' }}/> جاري التحليل...</> : <><TrendingUp size={14}/> تحليل الاتجاهات</>}
+            </button>
+          </div>
+
+          {!trendsResult && !trendsLoading && (
+            <div style={{ background: '#070d1a', border: '1px solid #1a2540', borderRadius: '16px', padding: '60px 24px', textAlign: 'center' }}>
+              <TrendingUp size={48} strokeWidth={1} style={{ margin: '0 auto 16px', display: 'block', color: '#1a2540' }}/>
+              <div style={{ fontSize: '14px', color: '#3d4f6e', marginBottom: '6px' }}>لم يتم التحليل بعد</div>
+              <div style={{ fontSize: '12px', color: '#1a2540' }}>اضغط على "تحليل الاتجاهات" للبدء</div>
+            </div>
+          )}
+
+          {trendsResult && !('error' in trendsResult) && (
+            <>
+              {/* Headline */}
+              <div style={{ background: 'rgba(0,212,255,.05)', border: '1px solid rgba(0,212,255,.2)', borderRadius: '14px', padding: '18px 22px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(0,212,255,.1)', border: '1px solid rgba(0,212,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {trendsResult.overallTrend === 'improving'
+                    ? <ChevronUp size={22} color="#00e676"/>
+                    : trendsResult.overallTrend === 'declining'
+                    ? <ChevronDown size={22} color="#ff3366"/>
+                    : <Minus size={22} color="#ffb300"/>}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#e8f0ff' }}>{trendsResult.headline as string}</div>
+                  <div style={{ fontSize: '11px', color: '#3d4f6e', marginTop: '4px' }}>نقاط الاتجاه: <span style={{ color: '#00d4ff', fontWeight: 700 }}>{trendsResult.trendScore as number}/100</span></div>
+                </div>
+                <div style={{ padding: '6px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, background: trendsResult.overallTrend === 'improving' ? 'rgba(0,230,118,.12)' : trendsResult.overallTrend === 'declining' ? 'rgba(255,51,102,.12)' : 'rgba(255,179,0,.12)', color: trendsResult.overallTrend === 'improving' ? '#00e676' : trendsResult.overallTrend === 'declining' ? '#ff3366' : '#ffb300', border: `1px solid ${trendsResult.overallTrend === 'improving' ? 'rgba(0,230,118,.3)' : trendsResult.overallTrend === 'declining' ? 'rgba(255,51,102,.3)' : 'rgba(255,179,0,.3)'}` }}>
+                  {{ improving: '↑ تحسن', stable: '→ مستقر', declining: '↓ تراجع' }[trendsResult.overallTrend as string] || trendsResult.overallTrend as string}
+                </div>
+              </div>
+
+              {/* Insights */}
+              {Array.isArray(trendsResult.insights) && trendsResult.insights.length > 0 && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  {(trendsResult.insights as Array<{ category: string; title: string; finding: string; impact: string; recommendation: string }>).map((ins, i) => {
+                    const impactColor = ins.impact === 'positive' ? '#00e676' : ins.impact === 'negative' ? '#ff3366' : '#ffb300'
+                    return (
+                      <div key={i} style={{ background: '#070d1a', border: `1px solid ${impactColor}25`, borderRadius: '14px', padding: '18px', borderTopColor: impactColor, borderTopWidth: '2px', animation: `fadeUp .3s ease ${i * 0.08}s both` }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                          <span style={{ fontSize: '10px', fontWeight: 700, color: impactColor, textTransform: 'uppercase', letterSpacing: '.06em' }}>{ins.category}</span>
+                          <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '5px', background: `${impactColor}15`, color: impactColor, border: `1px solid ${impactColor}30` }}>
+                            {{ positive: '↑ إيجابي', neutral: '→ محايد', negative: '↓ سلبي' }[ins.impact] || ins.impact}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#e8f0ff', marginBottom: '8px' }}>{ins.title}</div>
+                        <div style={{ fontSize: '12px', color: '#6b7fa3', lineHeight: 1.6, marginBottom: '10px' }}>{ins.finding}</div>
+                        <div style={{ fontSize: '11px', color: '#00d4ff', background: 'rgba(0,212,255,.06)', padding: '8px 10px', borderRadius: '7px', border: '1px solid rgba(0,212,255,.12)' }}>
+                          💡 {ins.recommendation}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              {/* Bottom row: Top Risks + Quick Wins + Predictions */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                {Array.isArray(trendsResult.topRisks) && (
+                  <div style={{ background: '#070d1a', border: '1px solid rgba(255,51,102,.2)', borderRadius: '14px', padding: '16px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#ff3366', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>⚠️ أبرز المخاطر</div>
+                    {(trendsResult.topRisks as string[]).map((r, i) => (
+                      <div key={i} style={{ fontSize: '12px', color: '#c8d8f0', marginBottom: '8px', display: 'flex', gap: '8px', lineHeight: 1.5 }}>
+                        <span style={{ color: '#ff3366', flexShrink: 0, fontWeight: 700 }}>{i + 1}.</span> {r}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {Array.isArray(trendsResult.quickWins) && (
+                  <div style={{ background: '#070d1a', border: '1px solid rgba(0,230,118,.2)', borderRadius: '14px', padding: '16px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#00e676', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>✅ فرص التحسين السريع</div>
+                    {(trendsResult.quickWins as string[]).map((w, i) => (
+                      <div key={i} style={{ fontSize: '12px', color: '#c8d8f0', marginBottom: '8px', display: 'flex', gap: '8px', lineHeight: 1.5 }}>
+                        <span style={{ color: '#00e676', flexShrink: 0, fontWeight: 700 }}>✓</span> {w}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {Array.isArray(trendsResult.predictions) && (
+                  <div style={{ background: '#070d1a', border: '1px solid rgba(0,212,255,.2)', borderRadius: '14px', padding: '16px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#00d4ff', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>🔮 توقعات الأسبوع القادم</div>
+                    {(trendsResult.predictions as Array<{ metric: string; prediction: string; confidence: string }>).map((p, i) => (
+                      <div key={i} style={{ marginBottom: '10px', paddingBottom: '10px', borderBottom: i < (trendsResult.predictions as unknown[]).length - 1 ? '1px solid #0d1428' : 'none' }}>
+                        <div style={{ fontSize: '11px', color: '#3d4f6e', marginBottom: '3px' }}>{p.metric}</div>
+                        <div style={{ fontSize: '12px', color: '#c8d8f0' }}>{p.prediction}</div>
+                        <div style={{ fontSize: '10px', marginTop: '3px', color: p.confidence === 'high' ? '#00e676' : p.confidence === 'medium' ? '#ffb300' : '#6b7fa3' }}>
+                          ثقة {p.confidence === 'high' ? 'عالية' : p.confidence === 'medium' ? 'متوسطة' : 'منخفضة'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {trendsResult && 'error' in trendsResult && (
+            <div style={{ padding: '20px', background: 'rgba(255,51,102,.08)', border: '1px solid rgba(255,51,102,.2)', borderRadius: '12px', color: '#ff3366', fontSize: '13px', textAlign: 'center' }}>
+              {trendsResult.error as string}
             </div>
           )}
         </div>

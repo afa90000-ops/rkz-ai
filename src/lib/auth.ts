@@ -2,6 +2,7 @@ import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import { createHash } from 'crypto'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { logActivity } from '@/lib/audit'
 
 const DEMO_USERS = [
   { id:'1', email:'admin@rkz.ai',    password:'admin123',    name:'أحمد الراشد',      role:'admin',    company_id:'11111111-1111-1111-1111-111111111111' },
@@ -40,6 +41,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             .maybeSingle()
 
           if (user) {
+            logActivity({
+              action: 'user.login',
+              userId: user.id,
+              userEmail: user.email,
+              companyId: user.company_id,
+              details: { role: user.role, source: 'supabase' },
+            })
             return {
               id: user.id,
               email: user.email,
@@ -52,7 +60,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         // 2. Fallback: demo users (backward compat)
         const demo = DEMO_USERS.find(u => u.email === credentials.email && u.password === credentials.password)
-        if (demo) return { id:demo.id, email:demo.email, name:demo.name, role:demo.role, company_id:demo.company_id }
+        if (demo) {
+          logActivity({
+            action: 'user.login',
+            userId: demo.id,
+            userEmail: demo.email,
+            companyId: demo.company_id,
+            details: { role: demo.role, source: 'demo' },
+          })
+          return { id:demo.id, email:demo.email, name:demo.name, role:demo.role, company_id:demo.company_id }
+        }
 
         return null
       },

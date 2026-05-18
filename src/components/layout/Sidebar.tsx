@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { useState, useEffect } from 'react'
-import { LayoutDashboard, Camera, Bell, Users, FileBarChart, Settings, LogOut, Shield, ChevronRight, Activity, Menu, X, Building2, Wrench, Package, AlertTriangle, Map, UserCog, BarChart3, Bot, Box, Cpu } from 'lucide-react'
+import { LayoutDashboard, Camera, Bell, Users, FileBarChart, Settings, LogOut, Shield, ChevronRight, Activity, Menu, X, Building2, Wrench, Package, AlertTriangle, Map, UserCog, BarChart3, Bot, Box, Cpu, ClipboardList } from 'lucide-react'
 import { useRole } from '@/hooks/useRole'
 import { can, UserRole } from '@/lib/roles'
 
@@ -23,6 +23,7 @@ const navItems = [
   { href:'/twin',      label:'التوأم الرقمي', icon:Box,             badge:null, badgeAlert:false, permission:null },
   { href:'/edge',      label:'Edge AI',       icon:Cpu,             badge:null, badgeAlert:false, permission:null },
   { href:'/users',     label:'المستخدمون',    icon:UserCog,         badge:null, badgeAlert:false, permission:'settings_view' as const },
+  { href:'/audit',     label:'سجل النشاط',   icon:ClipboardList,   badge:null, badgeAlert:false, permission:'settings_view' as const },
   { href:'/settings',  label:'الإعدادات',    icon:Settings,        badge:null, badgeAlert:false, permission:'settings_view' as const },
 ]
 

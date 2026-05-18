@@ -1,15 +1,20 @@
 import { createClient } from '@/lib/supabase/client'
 
-const COMPANY_ID = '11111111-1111-1111-1111-111111111111'
+export const DEFAULT_COMPANY_ID = '11111111-1111-1111-1111-111111111111'
+
+function cid(companyId?: string) {
+  return companyId || DEFAULT_COMPANY_ID
+}
 
 // ── Dashboard Stats ──────────────────────────────
-export async function getDashboardStats() {
+export async function getDashboardStats(companyId?: string) {
   const db = createClient()
+  const id = cid(companyId)
   const [cameras, workers, alerts, projects] = await Promise.all([
-    db.from('cameras').select('id, status').eq('company_id', COMPANY_ID),
-    db.from('workers').select('id, is_active').eq('company_id', COMPANY_ID),
-    db.from('alerts').select('id, severity, status').eq('company_id', COMPANY_ID),
-    db.from('projects').select('id, status').eq('company_id', COMPANY_ID),
+    db.from('cameras').select('id, status').eq('company_id', id),
+    db.from('workers').select('id, is_active').eq('company_id', id),
+    db.from('alerts').select('id, severity, status').eq('company_id', id),
+    db.from('projects').select('id, status').eq('company_id', id),
   ])
   return {
     totalCameras: cameras.data?.length || 0,
@@ -24,12 +29,10 @@ export async function getDashboardStats() {
 }
 
 // ── Cameras ──────────────────────────────────────
-export async function getCameras() {
+export async function getCameras(companyId?: string) {
   const db = createClient()
   const { data, error } = await db
-    .from('cameras')
-    .select('*')
-    .eq('company_id', COMPANY_ID)
+    .from('cameras').select('*').eq('company_id', cid(companyId))
     .order('created_at', { ascending: false })
   if (error) throw error
   return data || []
@@ -38,11 +41,11 @@ export async function getCameras() {
 export async function addCamera(camera: {
   name: string; name_ar: string; location_ar: string;
   camera_type: string; resolution: string; fps: number;
-}) {
+}, companyId?: string) {
   const db = createClient()
   const { data, error } = await db
     .from('cameras')
-    .insert({ ...camera, company_id: COMPANY_ID, status: 'online', is_recording: true, ai_enabled: true })
+    .insert({ ...camera, company_id: cid(companyId), status: 'online', is_recording: true, ai_enabled: true })
     .select().single()
   if (error) throw error
   return data
@@ -61,12 +64,10 @@ export async function deleteCamera(id: string) {
 }
 
 // ── Workers ──────────────────────────────────────
-export async function getWorkers() {
+export async function getWorkers(companyId?: string) {
   const db = createClient()
   const { data, error } = await db
-    .from('workers')
-    .select('*')
-    .eq('company_id', COMPANY_ID)
+    .from('workers').select('*').eq('company_id', cid(companyId))
     .order('name', { ascending: true })
   if (error) throw error
   return data || []
@@ -75,11 +76,11 @@ export async function getWorkers() {
 export async function addWorker(worker: {
   name: string; name_ar: string; employee_id: string;
   phone: string; role_ar: string; department: string;
-}) {
+}, companyId?: string) {
   const db = createClient()
   const { data, error } = await db
     .from('workers')
-    .insert({ ...worker, company_id: COMPANY_ID, is_active: true, safety_score: 100 })
+    .insert({ ...worker, company_id: cid(companyId), is_active: true, safety_score: 100 })
     .select().single()
   if (error) throw error
   return data
@@ -92,12 +93,10 @@ export async function deleteWorker(id: string) {
 }
 
 // ── Alerts ──────────────────────────────────────
-export async function getAlerts() {
+export async function getAlerts(companyId?: string) {
   const db = createClient()
   const { data, error } = await db
-    .from('alerts')
-    .select('*')
-    .eq('company_id', COMPANY_ID)
+    .from('alerts').select('*').eq('company_id', cid(companyId))
     .order('created_at', { ascending: false })
   if (error) throw error
   return data || []
@@ -113,12 +112,10 @@ export async function updateAlertStatus(id: string, status: string) {
 }
 
 // ── Reports ──────────────────────────────────────
-export async function getReports() {
+export async function getReports(companyId?: string) {
   const db = createClient()
   const { data, error } = await db
-    .from('reports')
-    .select('*')
-    .eq('company_id', COMPANY_ID)
+    .from('reports').select('*').eq('company_id', cid(companyId))
     .order('created_at', { ascending: false })
   if (error) throw error
   return data || []
@@ -127,23 +124,21 @@ export async function getReports() {
 export async function addReport(report: {
   title: string; title_ar: string; report_type: string;
   period_start: string; period_end: string;
-}) {
+}, companyId?: string) {
   const db = createClient()
   const { data, error } = await db
     .from('reports')
-    .insert({ ...report, company_id: COMPANY_ID, status: 'generated', created_by: '22222222-2222-2222-2222-222222222222' })
+    .insert({ ...report, company_id: cid(companyId), status: 'generated', created_by: '22222222-2222-2222-2222-222222222222' })
     .select().single()
   if (error) throw error
   return data
 }
 
 // ── Projects ──────────────────────────────────────
-export async function getProjects() {
+export async function getProjects(companyId?: string) {
   const db = createClient()
   const { data, error } = await db
-    .from('projects')
-    .select('*')
-    .eq('company_id', COMPANY_ID)
+    .from('projects').select('*').eq('company_id', cid(companyId))
     .order('created_at', { ascending: false })
   if (error) throw error
   return data || []
@@ -156,12 +151,10 @@ export async function updateProjectProgress(id: string, progress: number) {
 }
 
 // ── Equipment ──────────────────────────────────────
-export async function getEquipment() {
+export async function getEquipment(companyId?: string) {
   const db = createClient()
   const { data, error } = await db
-    .from('equipment')
-    .select('*')
-    .eq('company_id', COMPANY_ID)
+    .from('equipment').select('*').eq('company_id', cid(companyId))
     .order('created_at', { ascending: false })
   if (error) throw error
   return data || []
@@ -174,24 +167,20 @@ export async function updateEquipmentStatus(id: string, status: string) {
 }
 
 // ── Materials ──────────────────────────────────────
-export async function getMaterials() {
+export async function getMaterials(companyId?: string) {
   const db = createClient()
   const { data, error } = await db
-    .from('materials')
-    .select('*')
-    .eq('company_id', COMPANY_ID)
+    .from('materials').select('*').eq('company_id', cid(companyId))
     .order('created_at', { ascending: false })
   if (error) throw error
   return data || []
 }
 
 // ── Issues ──────────────────────────────────────
-export async function getIssues() {
+export async function getIssues(companyId?: string) {
   const db = createClient()
   const { data, error } = await db
-    .from('issues')
-    .select('*')
-    .eq('company_id', COMPANY_ID)
+    .from('issues').select('*').eq('company_id', cid(companyId))
     .order('created_at', { ascending: false })
   if (error) throw error
   return data || []
@@ -209,71 +198,61 @@ export async function updateIssueStatus(id: string, status: string) {
 export async function addIssue(issue: {
   title: string; title_ar?: string; description?: string;
   issue_type?: string; severity: string; location?: string; project_id?: string;
-}) {
+}, companyId?: string) {
   const db = createClient()
   const { data, error } = await db
     .from('issues')
-    .insert({ ...issue, company_id: COMPANY_ID, status: 'open' })
+    .insert({ ...issue, company_id: cid(companyId), status: 'open' })
     .select().single()
   if (error) throw error
   return data
 }
 
 // ── Inspections ──────────────────────────────────────
-export async function getInspections() {
+export async function getInspections(companyId?: string) {
   const db = createClient()
   const { data, error } = await db
-    .from('inspections')
-    .select('*')
-    .eq('company_id', COMPANY_ID)
+    .from('inspections').select('*').eq('company_id', cid(companyId))
     .order('scheduled_date', { ascending: false })
   if (error) throw error
   return data || []
 }
 
 // ── Schedules ──────────────────────────────────────
-export async function getSchedules() {
+export async function getSchedules(companyId?: string) {
   const db = createClient()
   const { data, error } = await db
-    .from('schedules')
-    .select('*')
-    .eq('company_id', COMPANY_ID)
+    .from('schedules').select('*').eq('company_id', cid(companyId))
     .order('planned_start', { ascending: true })
   if (error) throw error
   return data || []
 }
 
 // ── Progress Logs ──────────────────────────────────────
-export async function getProgressLogs() {
+export async function getProgressLogs(companyId?: string) {
   const db = createClient()
   const { data, error } = await db
-    .from('progress_logs')
-    .select('*')
-    .eq('company_id', COMPANY_ID)
+    .from('progress_logs').select('*').eq('company_id', cid(companyId))
     .order('date', { ascending: false })
   if (error) throw error
   return data || []
 }
 
 // ── Contractors ──────────────────────────────────────
-export async function getContractors() {
+export async function getContractors(companyId?: string) {
   const db = createClient()
   const { data, error } = await db
-    .from('contractors')
-    .select('*')
-    .eq('company_id', COMPANY_ID)
+    .from('contractors').select('*').eq('company_id', cid(companyId))
     .order('created_at', { ascending: false })
   if (error) throw error
   return data || []
 }
 
 // ── Users ──────────────────────────────────────
-export async function getUsers() {
+export async function getUsers(companyId?: string) {
   const db = createClient()
   const { data, error } = await db
-    .from('users')
-    .select('*')
-    .eq('company_id', COMPANY_ID)
+    .from('users').select('*').eq('company_id', cid(companyId))
     .order('created_at', { ascending: false })
   if (error) throw error
   return data || []
@@ -293,9 +272,8 @@ export async function toggleUserActive(id: string, is_active: boolean) {
 
 export async function addUser(user: {
   full_name_ar: string; email: string; role: string; password: string;
-}) {
+}, companyId?: string) {
   const db = createClient()
-  // Hash password via API route (server-side SHA-256)
   const hashRes = await fetch('/api/hash-password', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -309,13 +287,24 @@ export async function addUser(user: {
       full_name_ar: user.full_name_ar,
       email: user.email,
       role: user.role,
-      company_id: COMPANY_ID,
+      company_id: cid(companyId),
       password_hash: hash,
       is_active: true,
     })
     .select().single()
   if (error) throw error
   return data
+}
+
+// ── Activity Logs ──────────────────────────────────────
+export async function getActivityLogs(companyId?: string) {
+  const db = createClient()
+  const { data, error } = await db
+    .from('activity_logs').select('*').eq('company_id', cid(companyId))
+    .order('created_at', { ascending: false })
+    .limit(200)
+  if (error) throw error
+  return data || []
 }
 
 // ── Email Notifications ──────────────────────────────────────

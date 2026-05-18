@@ -2,8 +2,8 @@
 import { useEffect, useState } from 'react'
 import { getAlerts, updateAlertStatus } from '@/lib/queries'
 import { formatRelativeTime, getAlertTypeLabel } from '@/lib/utils'
-import { exportCSV } from '@/lib/export'
-import { CheckCircle, XCircle, Clock, MapPin, Download } from 'lucide-react'
+import { exportCSV, exportXLSX } from '@/lib/export'
+import { CheckCircle, XCircle, Clock, MapPin, Download, FileSpreadsheet } from 'lucide-react'
 import { useRole } from '@/hooks/useRole'
 
 const severityColors: Record<string,string> = { critical:'#ff3366', high:'#ff7700', medium:'#ffaa00', low:'#00e676' }
@@ -64,7 +64,17 @@ export default function AlertsPage() {
             { key:'location', label:'الموقع' },
             { key:'created_at', label:'التاريخ' },
           ])} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'8px 14px', borderRadius:'10px', border:'1px solid #1a2540', background:'#070d1a', color:'#6b7fa3', cursor:'pointer', fontSize:'12px', fontWeight:600, fontFamily:"'Cairo',sans-serif" }}>
-            <Download size={13}/> تصدير CSV
+            <Download size={13}/> CSV
+          </button>
+          <button onClick={() => exportXLSX('تنبيهات', filtered, [
+            { key:'title_ar', label:'العنوان' },
+            { key:'alert_type', label:'النوع' },
+            { key:'severity', label:'الخطورة' },
+            { key:'status', label:'الحالة' },
+            { key:'location', label:'الموقع' },
+            { key:'created_at', label:'التاريخ' },
+          ], 'التنبيهات')} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'8px 14px', borderRadius:'10px', border:'1px solid rgba(0,230,118,.3)', background:'rgba(0,230,118,.06)', color:'#00e676', cursor:'pointer', fontSize:'12px', fontWeight:600, fontFamily:"'Cairo',sans-serif" }}>
+            <FileSpreadsheet size={13}/> Excel
           </button>
         </div>
       </div>

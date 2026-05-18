@@ -1,8 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { getWorkers, addWorker, deleteWorker } from '@/lib/queries'
-import { exportCSV } from '@/lib/export'
-import { Search, Plus, X, Lock, Download } from 'lucide-react'
+import { exportCSV, exportXLSX } from '@/lib/export'
+import { Search, Plus, X, Lock, Download, FileSpreadsheet } from 'lucide-react'
 import { useRole } from '@/hooks/useRole'
 
 type WorkerRow = { id:string;name:string;name_ar:string;employee_id:string;phone:string;role_ar:string;department:string;is_active:boolean;safety_score:number;total_violations:number;total_hours:number }
@@ -115,7 +115,15 @@ export default function WorkersPage() {
           { key:'phone', label:'الهاتف' }, { key:'safety_score', label:'نقاط السلامة' },
           { key:'is_active', label:'نشط' }, { key:'total_violations', label:'المخالفات' },
         ])} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'10px 14px', borderRadius:'10px', border:'1px solid #1a2540', background:'#070d1a', color:'#6b7fa3', cursor:'pointer', fontSize:'12px', fontWeight:600, fontFamily:"'Cairo',sans-serif", whiteSpace:'nowrap' }}>
-          <Download size={13}/> تصدير CSV
+          <Download size={13}/> CSV
+        </button>
+        <button onClick={() => exportXLSX('عمال', filtered, [
+          { key:'name_ar', label:'الاسم' }, { key:'employee_id', label:'رقم الموظف' },
+          { key:'role_ar', label:'الدور' }, { key:'department', label:'القسم' },
+          { key:'phone', label:'الهاتف' }, { key:'safety_score', label:'نقاط السلامة' },
+          { key:'is_active', label:'نشط' }, { key:'total_violations', label:'المخالفات' },
+        ], 'العمال')} style={{ display:'flex', alignItems:'center', gap:'6px', padding:'10px 14px', borderRadius:'10px', border:'1px solid rgba(0,230,118,.3)', background:'rgba(0,230,118,.06)', color:'#00e676', cursor:'pointer', fontSize:'12px', fontWeight:600, fontFamily:"'Cairo',sans-serif", whiteSpace:'nowrap' }}>
+          <FileSpreadsheet size={13}/> Excel
         </button>
       </div>
 

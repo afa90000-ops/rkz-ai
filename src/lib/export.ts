@@ -24,3 +24,36 @@ export function exportCSV(
   a.click()
   URL.revokeObjectURL(url)
 }
+
+export async function exportXLSX(
+  filename: string,
+  rows: Record<string, unknown>[],
+  columns: { key: string; label: string }[],
+  sheetName = 'البيانات'
+) {
+  if (!rows.length) return
+
+  const XLSX = await import('xlsx')
+
+  const header = columns.map(c => c.label)
+  const data = rows.map(row =>
+    columns.map(c => {
+      const val = row[c.key]
+      return val == null ? '' : String(val)
+    })
+  )
+
+  const ws = XLSX.utils.aoa_to_sheet([header, ...data])
+
+  // Column widths
+  ws['!cols'] = columns.map(() => ({ wch: 20 }))
+
+  // RTL sheet view
+  if (!ws['!sheetView']) ws['!sheetView'] = {}
+  ws['!sheetView'] = { rightToLeft: true }
+
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, sheetName)
+
+  XLSX.writeFile(wb, `${filename}_${new Date().toISOString().slice(0, 10)}.xlsx`)
+}
